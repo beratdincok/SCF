@@ -290,8 +290,6 @@ div[data-testid="stMetric"] {
 </style>
 """,
 unsafe_allow_html=True,
-```
-
 )
 
 # =========================================================
