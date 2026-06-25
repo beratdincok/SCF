@@ -147,7 +147,6 @@ f""" <div class="hero"> <div class="hero-title">
 </div>
 """,
 unsafe_allow_html=True
-```
 
 )
 
