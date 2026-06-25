@@ -168,7 +168,6 @@ Havayolu Bazlı Kullanım </div>
 </div>
 """,
 unsafe_allow_html=True
-```
 
 )
 
