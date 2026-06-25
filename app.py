@@ -370,7 +370,6 @@ label {
 </style>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -445,7 +444,6 @@ SFC • SCF–IKARUS DİJİTAL HANDBOOK </div>
 </section>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -501,7 +499,6 @@ selected_airline
 + " Hizmet Haritası"
 )
 
-```
 summary_1, summary_2, summary_3 = st.columns(3)
 
 with summary_1:
@@ -826,12 +823,10 @@ with category_9:
         """,
         unsafe_allow_html=True,
     )
-```
 
 with tab_2:
 st.subheader("IKARUS İşlem Akışı")
 
-```
 st.markdown(
     """
     <div class="step">
@@ -877,7 +872,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
 
 with tab_3:
 st.subheader(
@@ -885,7 +879,6 @@ selected_airline
 + " SCF Kapanış Kontrolü"
 )
 
-```
 checklist_results = [
     st.checkbox(
         item,
@@ -928,7 +921,6 @@ else:
         + str(total_count - completed_count)
         + " kontrol maddesi bulunuyor."
     )
-```
 
 with tab_4:
 st.subheader(
@@ -936,7 +928,6 @@ selected_airline
 + " Havayolu Özel Notları"
 )
 
-```
 st.info(
     airline_information.get(
         "general_note",
@@ -958,12 +949,10 @@ st.warning(
     "Bu alana yazılan notlar kalıcı veritabanına "
     "kaydedilmez. Sayfa yenilendiğinde silinebilir."
 )
-```
 
 with tab_5:
 st.subheader("Sürüm ve Onay Bilgileri")
 
-```
 version_1, version_2 = st.columns(2)
 
 with version_1:
@@ -1004,7 +993,6 @@ st.caption(
     "Sistem tarihi: "
     + date.today().strftime("%d.%m.%Y")
 )
-```
 
 st.divider()
 
