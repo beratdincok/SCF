@@ -419,7 +419,6 @@ SCF Kapanış Kontrolü </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -538,7 +537,6 @@ Uçuş Bilgileri </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -555,7 +553,6 @@ Yolcu Hizmetleri </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -572,7 +569,6 @@ Ramp / Apron Hizmetleri </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -591,7 +587,6 @@ Uçak Hizmetleri </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -608,7 +603,6 @@ Yük Kontrol ve Operasyon </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -624,7 +618,6 @@ Kargo ve Posta </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -643,7 +636,6 @@ GSE / Ekipman </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -660,7 +652,6 @@ Ekstra / Ad-hoc Hizmetler </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -677,7 +668,6 @@ category_9.markdown(
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -725,7 +715,6 @@ tescili kontrol et. </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -831,7 +820,6 @@ f""" <div class="section-box"> <div class="section-title">
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
