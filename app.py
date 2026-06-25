@@ -404,7 +404,6 @@ Havayolu Özel Kuralları </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
