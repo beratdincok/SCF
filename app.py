@@ -106,7 +106,6 @@ transparent 25rem
 </style>
 """,
 unsafe_allow_html=True
-```
 
 )
 
