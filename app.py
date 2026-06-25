@@ -337,7 +337,6 @@ SFC • SCF–IKARUS DİJİTAL HANDBOOK </div>
 </div>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
