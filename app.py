@@ -301,7 +301,6 @@ unsafe_allow_html=True,
 def show_hero(title, subtitle, badges):
 badge_html = ""
 
-```
 for badge in badges:
     badge_html += f'<span class="badge">{badge}</span>'
 
