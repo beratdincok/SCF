@@ -729,4 +729,3 @@ elif selected_page == "Sistem Hakkında":
     st.caption(
         "SFC • SCF–IKARUS Operasyon Rehberi"
     )
-```
