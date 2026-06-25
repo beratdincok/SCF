@@ -262,7 +262,6 @@ textarea {
 </style>
 """,
 unsafe_allow_html=True,
-```
 
 )
 
@@ -276,7 +275,6 @@ badge_html = "".join(
 for badge in badges
 )
 
-```
 st.markdown(
     f"""
     <section class="hero">
@@ -299,7 +297,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
 
 def show_card(title, text):
 st.markdown(
@@ -314,7 +311,6 @@ f""" <div class="card"> <div class="card-title">
     """,
     unsafe_allow_html=True,
 )
-```
 
 def service_rows(services):
 return [
@@ -383,7 +379,6 @@ str(len(AIRLINES)) + " ayrı sayfa",
 ],
 )
 
-```
 col1, col2, col3, col4 = st.columns(4)
 
 col1.metric(
@@ -468,7 +463,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
 
 def all_airlines_page():
 show_hero(
@@ -484,7 +478,6 @@ show_hero(
 ],
 )
 
-```
 search = st.text_input(
     "Havayolu kodu ara",
     placeholder="Örnek: SVA, UAE, UZB",
@@ -531,7 +524,6 @@ for index, code in enumerate(filtered):
             """,
             unsafe_allow_html=True,
         )
-```
 
 def global_search_page():
 show_hero(
@@ -547,7 +539,6 @@ show_hero(
 ],
 )
 
-```
 rows = []
 
 for code, services in AIRLINE_SERVICES.items():
@@ -607,7 +598,6 @@ else:
         "Henüz arama yapılabilecek doğrulanmış "
         "hizmet kaydı bulunmuyor."
     )
-```
 
 def make_airline_page(code):
 def airline_page():
@@ -616,7 +606,6 @@ code,
 [],
 )
 
-```
     info = AIRLINE_INFO.get(
         code,
         {},
@@ -965,7 +954,6 @@ code,
         )
 
 return airline_page
-```
 
 st.sidebar.markdown("# ✈️ SFC")
 
