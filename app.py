@@ -1,0 +1,1 @@
+airline_code,category,service_name,ikarus_section,ikarus_field,entry_rule,unit,required,when_to_enter,verification_source,notes,sort_order
