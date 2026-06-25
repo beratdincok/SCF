@@ -1,8 +1,0 @@
-SFC GITHUB YÜKLEME KONTROLÜ
-
-1) Repository ana dizininde app.py bulunmalı.
-2) app.py ilk satırı: # SFC – SCF/IKARUS Rehberi | Streamlit başlangıç dosyası
-3) data/services.csv ayrı dosya olmalı.
-4) services.csv başlığı app.py içine yapıştırılmamalı.
-5) requirements.txt ana dizinde bulunmalı.
-6) Streamlit Main file path: app.py
