@@ -403,7 +403,7 @@ if "view" not in st.session_state:
     st.session_state["view"] = "Hizmet Kartları"
 
 
-st.sidebar.markdown("# ✈️ SFC")
+st.sidebar.markdown("# ✈️ Scf")
 st.sidebar.caption("SCF–IKARUS Operasyon Rehberi")
 st.sidebar.divider()
 
