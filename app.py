@@ -1,4 +1,4 @@
-# SFC MODERN CARD BUILD 2026-07-01
+# SFC MODERN CARD BUILD FIXED 2026-07-01
 
 import json
 import uuid
@@ -21,6 +21,16 @@ AIRLINES = [
     "CTN", "CSC", "CSN", "DAH", "DHX", "DLH", "ETD", "FAD", "FDX",
     "GEC", "IAW", "IGT", "KAC", "KAL", "KNE", "KZR", "AYN", "MGH",
     "SHI", "SVA", "RAM", "UAE", "UBD", "UZB", "BRU", "SKYAIR",
+]
+
+
+MENU_ITEMS = [
+    "Hizmet Kartları",
+    "Yeni Hizmet Ekle",
+    "Hizmet Düzenle / Sil",
+    "Tüm Hizmetlerde Ara",
+    "SCF Kontrol",
+    "Veri Yönetimi",
 ]
 
 
@@ -129,14 +139,14 @@ st.markdown(
 )
 
 
-def empty_data():
-    return {code: [] for code in AIRLINES}
-
-
 def safe_text(value):
     if value is None:
         return ""
     return str(value)
+
+
+def empty_data():
+    return {code: [] for code in AIRLINES}
 
 
 def normalize_data(data):
@@ -225,6 +235,7 @@ def make_row(
 
 def services_for_airline(data, airline):
     rows = data.get(airline, [])
+
     return [
         row
         for row in rows
@@ -236,6 +247,7 @@ def find_service(data, airline, service_id):
     for row in services_for_airline(data, airline):
         if row.get("id") == service_id:
             return row
+
     return None
 
 
@@ -250,6 +262,7 @@ def update_service(data, airline, service_id, updated_row):
             new_rows.append(row)
 
     data[airline] = new_rows
+
     return data
 
 
@@ -259,6 +272,7 @@ def delete_service(data, airline, service_id):
         for row in data.get(airline, [])
         if row.get("id") != service_id
     ]
+
     return data
 
 
@@ -286,6 +300,9 @@ def filter_services(rows, search, category, required):
 
 
 def service_title(row):
+    if not isinstance(row, dict):
+        return "Hizmet bulunamadı"
+
     name = row.get("Hizmet Adı", "").strip()
     category = row.get("Ana Kategori", "").strip()
 
@@ -301,17 +318,20 @@ def service_title(row):
 def option_index(options, value):
     if value in options:
         return options.index(value)
+
     return 0
 
 
 if "data" not in st.session_state:
     st.session_state["data"] = load_data()
 
+
 if "editing_id" not in st.session_state:
     st.session_state["editing_id"] = None
 
-if "page" not in st.session_state:
-    st.session_state["page"] = "Hizmet Kartları"
+
+if "view" not in st.session_state:
+    st.session_state["view"] = "Hizmet Kartları"
 
 
 st.sidebar.markdown("# ✈️ SFC")
@@ -319,18 +339,27 @@ st.sidebar.caption("SCF–IKARUS Operasyon Rehberi")
 st.sidebar.divider()
 
 
-page = st.sidebar.radio(
-    "MENÜ",
-    [
-        "Hizmet Kartları",
-        "Yeni Hizmet Ekle",
-        "Hizmet Düzenle / Sil",
-        "Tüm Hizmetlerde Ara",
-        "SCF Kontrol",
-        "Veri Yönetimi",
-    ],
-    key="page",
-)
+st.sidebar.markdown("### Menü")
+
+for menu_item in MENU_ITEMS:
+    button_type = "primary" if st.session_state["view"] == menu_item else "secondary"
+
+    clicked = st.sidebar.button(
+        menu_item,
+        use_container_width=True,
+        type=button_type,
+        key="nav_" + menu_item,
+    )
+
+    if clicked:
+        st.session_state["view"] = menu_item
+        st.rerun()
+
+
+page = st.session_state["view"]
+
+
+st.sidebar.divider()
 
 
 selected_airline = st.sidebar.selectbox(
@@ -339,7 +368,6 @@ selected_airline = st.sidebar.selectbox(
 )
 
 
-st.sidebar.divider()
 st.sidebar.caption("Aktif havayolu: " + selected_airline)
 st.sidebar.caption("Bu sayfada sadece seçili havayolu verisi görünür.")
 
@@ -364,6 +392,7 @@ filled_airlines = sum(
 
 
 st.title(selected_airline + " Hizmet Rehberi")
+
 
 st.info(
     selected_airline
@@ -391,18 +420,21 @@ if page == "Hizmet Kartları":
         search_text = st.text_input(
             "Ara",
             placeholder="GPU, merdiven, süre, not...",
+            key="card_search_" + selected_airline,
         )
 
     with col_filter_2:
         category_filter = st.selectbox(
             "Kategori",
             ["Tümü"] + CATEGORIES,
+            key="card_category_" + selected_airline,
         )
 
     with col_filter_3:
         required_filter = st.selectbox(
             "Zorunluluk",
             ["Tümü"] + REQUIRED_OPTIONS,
+            key="card_required_" + selected_airline,
         )
 
     filtered_rows = filter_services(
@@ -432,20 +464,35 @@ if page == "Hizmet Kartları":
                 )
 
             with top_2:
-                if st.button("Düzenle", key="edit_card_" + row["id"]):
+                edit_clicked = st.button(
+                    "Düzenle",
+                    key="edit_card_" + row["id"],
+                    use_container_width=True,
+                )
+
+                if edit_clicked:
                     st.session_state["editing_id"] = row["id"]
-                    st.session_state["page"] = "Hizmet Düzenle / Sil"
+                    st.session_state["view"] = "Hizmet Düzenle / Sil"
                     st.rerun()
 
             with top_3:
-                if st.button("Sil", key="delete_card_" + row["id"]):
+                delete_clicked = st.button(
+                    "Sil",
+                    key="delete_card_" + row["id"],
+                    use_container_width=True,
+                )
+
+                if delete_clicked:
                     st.session_state["data"] = delete_service(
                         st.session_state["data"],
                         selected_airline,
                         row["id"],
                     )
+
                     save_data(st.session_state["data"])
+
                     st.success("Hizmet silindi.")
+
                     st.rerun()
 
             detail_1, detail_2, detail_3 = st.columns(3)
@@ -486,7 +533,11 @@ if page == "Yeni Hizmet Ekle":
         c1, c2 = st.columns(2)
 
         with c1:
-            new_category = st.selectbox("Ana Kategori", CATEGORIES)
+            new_category = st.selectbox(
+                "Ana Kategori",
+                CATEGORIES,
+                key="add_category",
+            )
 
             new_service = st.text_input(
                 "Hizmet Adı",
@@ -512,6 +563,7 @@ if page == "Yeni Hizmet Ekle":
             new_required = st.selectbox(
                 "Zorunlu mu?",
                 REQUIRED_OPTIONS,
+                key="add_required",
             )
 
             new_when = st.text_area(
@@ -561,6 +613,7 @@ if page == "Yeni Hizmet Ekle":
                 )
 
                 st.session_state["data"][selected_airline].append(new_row)
+
                 save_data(st.session_state["data"])
 
                 st.success(
@@ -568,12 +621,18 @@ if page == "Yeni Hizmet Ekle":
                     + " için yeni hizmet kaydedildi."
                 )
 
-                st.session_state["page"] = "Hizmet Kartları"
+                st.session_state["view"] = "Hizmet Kartları"
+
                 st.rerun()
 
 
 if page == "Hizmet Düzenle / Sil":
     st.subheader("Hizmet Düzenle / Sil")
+
+    current_rows = services_for_airline(
+        st.session_state["data"],
+        selected_airline,
+    )
 
     if not current_rows:
         st.warning(
@@ -602,6 +661,7 @@ if page == "Hizmet Düzenle / Sil":
                     service_id,
                 )
             ),
+            key="edit_service_selector_" + selected_airline,
         )
 
         selected_row = find_service(
@@ -623,6 +683,7 @@ if page == "Hizmet Düzenle / Sil":
                         CATEGORIES,
                         selected_row.get("Ana Kategori", ""),
                     ),
+                    key="edit_category_" + selected_service_id,
                 )
 
                 edit_service = st.text_input(
@@ -653,6 +714,7 @@ if page == "Hizmet Düzenle / Sil":
                         REQUIRED_OPTIONS,
                         selected_row.get("Zorunlu", ""),
                     ),
+                    key="edit_required_" + selected_service_id,
                 )
 
                 edit_when = st.text_area(
@@ -713,6 +775,9 @@ if page == "Hizmet Düzenle / Sil":
                     save_data(st.session_state["data"])
 
                     st.success("Hizmet güncellendi.")
+
+                    st.session_state["view"] = "Hizmet Kartları"
+
                     st.rerun()
 
         st.divider()
@@ -727,15 +792,27 @@ if page == "Hizmet Düzenle / Sil":
             )
 
         with delete_col_2:
-            if st.button("Seçili Hizmeti Sil", type="secondary"):
+            delete_selected = st.button(
+                "Seçili Hizmeti Sil",
+                type="secondary",
+                use_container_width=True,
+            )
+
+            if delete_selected:
                 st.session_state["data"] = delete_service(
                     st.session_state["data"],
                     selected_airline,
                     selected_service_id,
                 )
+
                 save_data(st.session_state["data"])
+
                 st.session_state["editing_id"] = None
+
                 st.success("Seçili hizmet silindi.")
+
+                st.session_state["view"] = "Hizmet Kartları"
+
                 st.rerun()
 
 
@@ -750,16 +827,19 @@ if page == "Tüm Hizmetlerde Ara":
     search_all = st.text_input(
         "Genel arama",
         placeholder="GPU, merdiven, süre, SVA...",
+        key="global_search",
     )
 
     filter_airline = st.selectbox(
         "Havayolu filtresi",
         ["Tümü"] + AIRLINES,
+        key="global_airline_filter",
     )
 
     filter_category = st.selectbox(
         "Kategori filtresi",
         ["Tümü"] + CATEGORIES,
+        key="global_category_filter",
     )
 
     all_rows = []
@@ -800,14 +880,17 @@ if page == "Tüm Hizmetlerde Ara":
 
             c1, c2, c3 = st.columns(3)
 
-            c1.write("**Kategori**")
-            c1.write(row.get("Ana Kategori", "-"))
+            with c1:
+                st.write("**Kategori**")
+                st.write(row.get("Ana Kategori", "-"))
 
-            c2.write("**IKARUS Başlığı**")
-            c2.write(row.get("IKARUS Konu Başlığı", "-"))
+            with c2:
+                st.write("**IKARUS Başlığı**")
+                st.write(row.get("IKARUS Konu Başlığı", "-"))
 
-            c3.write("**Zorunlu**")
-            c3.write(row.get("Zorunlu", "-"))
+            with c3:
+                st.write("**Zorunlu**")
+                st.write(row.get("Zorunlu", "-"))
 
             st.write("**Giriş Kuralı**")
             st.write(row.get("Giriş Kuralı", "-"))
@@ -880,9 +963,11 @@ if page == "Veri Yönetimi":
             )
 
             st.session_state["data"] = normalize_data(uploaded_data)
+
             save_data(st.session_state["data"])
 
             st.success("JSON yedeği yüklendi ve kaydedildi.")
+
             st.rerun()
         except Exception as exc:
             st.error("JSON okunamadı: " + str(exc))
@@ -891,12 +976,16 @@ if page == "Veri Yönetimi":
 
     if reset_clicked:
         st.session_state["data"] = empty_data()
+
         save_data(st.session_state["data"])
+
         st.warning("Tüm hizmet kayıtları sıfırlandı.")
+
         st.rerun()
 
 
 st.divider()
+
 st.caption(
     "SFC • SCF–IKARUS Dijital Operasyon Rehberi • "
     + selected_airline
