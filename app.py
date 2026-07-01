@@ -1,862 +1,903 @@
-# SFC CLEAN BUILD 2026-06-25
+# SFC MODERN CARD BUILD 2026-07-01
+
+import json
+import uuid
+from pathlib import Path
+from datetime import datetime
 
 import streamlit as st
 
+
 st.set_page_config(
-page_title="SCF–IKARUS Rehberi",
-page_icon="✈️",
-layout="wide",
-initial_sidebar_state="expanded",
+    page_title="SFC | SCF–IKARUS Rehberi",
+    page_icon="✈️",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
+
 
 AIRLINES = [
-"AWG Animawings ",
-"AAR Asiana Airlines ",
-"ABY Air Arabia ",
-"AEE Aegean Airlines ",
-"AHY Azerbaijan Airlines",
-"AZG Silk Way West Airlines ",
-"BBT BBN Airlines ",
-"CCA Air China ",
-"CES China Eastern Airlines ",
-"CTN Croatia Airlines ",
-"CSC Sichuan Airlines ",
-"CSN China Southern Airlines ",
-"DAH Air Algérie ",
-"DHX DHL",
-"DLH Lufthansa",
-"ETD Etihad Airways ",
-"FAD flyadeal ",
-"FDX FedEx Express",
-"GEC Lufthansa Cargo",
-"IAW Iraqi Airways ",
-"IGT Air lndia Express ",
-"KAC Kuwait Airways ",
-"KAL Korean Air",
-"KNE Flynas ",
-"KZR Air Astana ",
-"AYN Albatros Airlines ",
-"MGH Mavi Gök Airlines ",
-"SHI Sky Regional Airlines ",
-"SVA Saudia ",
-"RAM Royal Air Maroc ",
-"UAE Emirates ",
-"UBD UR Airlines ",
-"UZB Uzbekistan Airways ",
-"BRU Belavia ",
-"SKYAIR",
+    "AWG", "AAR", "ABY", "AEE", "AHY", "AZG", "BBT", "CCA", "CES",
+    "CTN", "CSC", "CSN", "DAH", "DHX", "DLH", "ETD", "FAD", "FDX",
+    "GEC", "IAW", "IGT", "KAC", "KAL", "KNE", "KZR", "AYN", "MGH",
+    "SHI", "SVA", "RAM", "UAE", "UBD", "UZB", "BRU", "SKYAIR",
 ]
+
 
 CATEGORIES = [
-"Uçuş Bilgileri",
-"Yolcu Hizmetleri",
-"Ramp / Apron Hizmetleri",
-"Uçak Hizmetleri",
-"Yük Kontrol ve Operasyon",
-"Kargo ve Posta",
-"GSE / Ekipman",
-"Ekstra / Ad-hoc Hizmetler",
-"İmza ve Kapanış",
+    "Uçuş Bilgileri",
+    "Yolcu Hizmetleri",
+    "Ramp / Apron Hizmetleri",
+    "Uçak Hizmetleri",
+    "Yük Kontrol ve Operasyon",
+    "Kargo ve Posta",
+    "GSE / Ekipman",
+    "Ekstra / Ad-hoc Hizmetler",
+    "İmza ve Kapanış",
 ]
 
+
+REQUIRED_OPTIONS = [
+    "Evet",
+    "Hayır",
+    "Duruma Bağlı",
+]
+
+
+CHECKLIST = [
+    "Doğru uçuş numarası ve tarih seçildi.",
+    "Arrival / Departure ayrımı kontrol edildi.",
+    "Uçak tipi ve tescili doğrulandı.",
+    "Gerçekleşen bütün hizmetler girildi.",
+    "Gerçekleşmeyen hizmetler eklenmedi.",
+    "Saat, adet, süre ve birimler kontrol edildi.",
+    "Mükerrer hizmet bulunmadığı kontrol edildi.",
+    "Ekstra hizmet açıklamaları eklendi.",
+    "Havayolu özel kuralları kontrol edildi.",
+    "İmza ve kapanış işlemleri tamamlandı.",
+]
+
+
+DATA_FILE = Path("services.json")
+
+
 st.markdown(
-""" <style>
-:root {
---navy: #0b1f33;
---blue: #0d5f88;
---cyan: #1597a8;
---background: #f3f6fa;
---card: #ffffff;
---text: #10233c;
---muted: #526579;
---border: #d9e3ec;
-}
+    """
+    <style>
+    .stApp {
+        background: #f3f6fa;
+        color: #10233c;
+    }
 
-```
-.stApp {
-    background: #f3f6fa;
-    color: #10233c;
-}
+    .block-container {
+        max-width: 1500px;
+        padding-top: 1.2rem;
+        padding-bottom: 3rem;
+    }
 
-.block-container {
-    max-width: 1450px;
-    padding-top: 1.2rem;
-    padding-bottom: 3rem;
-}
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #07192b 0%, #123452 100%);
+    }
 
-section[data-testid="stSidebar"] {
-    background: linear-gradient(
-        180deg,
-        #07192b 0%,
-        #123452 100%
-    );
-    border-right: 1px solid rgba(255, 255, 255, 0.12);
-}
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label {
+        color: #ffffff !important;
+    }
 
-section[data-testid="stSidebar"] h1,
-section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3,
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] label {
-    color: #ffffff !important;
-}
+    div[data-testid="stMetric"] {
+        background: #ffffff;
+        border: 1px solid #d9e3ec;
+        border-radius: 16px;
+        padding: 0.9rem 1rem;
+        box-shadow: 0 6px 18px rgba(14, 38, 62, 0.05);
+    }
 
-section[data-testid="stSidebar"]
-div[role="radiogroup"] label {
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 9px;
-    padding: 0.25rem 0.45rem;
-    margin-bottom: 0.12rem;
-}
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] div {
+        color: #10233c !important;
+    }
 
-section[data-testid="stSidebar"]
-div[role="radiogroup"] label:hover {
-    background: rgba(255, 255, 255, 0.14);
-}
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(14, 38, 62, 0.05);
+    }
 
-.hero {
-    background: linear-gradient(
-        125deg,
-        #081a2d 0%,
-        #0e527c 58%,
-        #12899b 100%
-    );
-    color: #ffffff;
-    border-radius: 24px;
-    padding: 2rem 2.2rem;
-    box-shadow: 0 18px 45px rgba(9, 30, 50, 0.18);
-    margin-bottom: 1.25rem;
-}
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="input"] > div,
+    textarea {
+        background: #ffffff !important;
+        color: #10233c !important;
+        border-color: #ccd8e4 !important;
+    }
 
-.hero-kicker {
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    opacity: 0.82;
-    margin-bottom: 0.55rem;
-}
+    input {
+        color: #10233c !important;
+        background: #ffffff !important;
+    }
 
-.hero-title {
-    font-size: clamp(2.2rem, 4vw, 3.6rem);
-    font-weight: 850;
-    line-height: 1.05;
-    margin-bottom: 0.7rem;
-}
-
-.hero-text {
-    font-size: 1.05rem;
-    line-height: 1.65;
-    max-width: 960px;
-    opacity: 0.92;
-}
-
-.badge {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    color: #ffffff;
-    border-radius: 999px;
-    padding: 0.38rem 0.8rem;
-    margin-top: 1rem;
-    margin-right: 0.45rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-}
-
-.card {
-    background: #ffffff;
-    border: 1px solid #d9e3ec;
-    border-radius: 17px;
-    padding: 1.15rem 1.2rem;
-    box-shadow: 0 7px 22px rgba(14, 38, 62, 0.06);
-    min-height: 138px;
-    margin-bottom: 0.9rem;
-}
-
-.card-title {
-    color: #10233c;
-    font-size: 1.05rem;
-    font-weight: 800;
-    margin-bottom: 0.45rem;
-}
-
-.card-text {
-    color: #526579;
-    font-size: 0.94rem;
-    line-height: 1.55;
-}
-
-.notice {
-    background: #fff8e7;
-    border: 1px solid #edd18c;
-    color: #674900;
-    border-radius: 14px;
-    padding: 1rem 1.1rem;
-    margin-bottom: 1rem;
-    line-height: 1.55;
-}
-
-.step {
-    background: #ffffff;
-    border: 1px solid #d9e3ec;
-    border-left: 5px solid #1597a8;
-    border-radius: 14px;
-    padding: 1rem 1.1rem;
-    margin-bottom: 0.75rem;
-    color: #10233c;
-}
-
-.section-box {
-    background: #ffffff;
-    border: 1px solid #d9e3ec;
-    border-radius: 16px;
-    padding: 1.1rem;
-    margin-bottom: 1rem;
-}
-
-.section-title {
-    color: #10233c;
-    font-size: 1.1rem;
-    font-weight: 800;
-    margin-bottom: 0.45rem;
-}
-
-.section-text {
-    color: #526579;
-    line-height: 1.55;
-}
-
-div[data-testid="stMetric"] {
-    background: #ffffff;
-    border: 1px solid #d9e3ec;
-    border-radius: 15px;
-    padding: 0.85rem 1rem;
-    box-shadow: 0 6px 18px rgba(14, 38, 62, 0.05);
-}
-
-div[data-testid="stMetric"] label,
-div[data-testid="stMetric"] div {
-    color: #10233c !important;
-}
-
-div[data-baseweb="select"] > div {
-    background: #ffffff !important;
-    color: #10233c !important;
-    border-color: #ccd8e4 !important;
-}
-
-div[data-baseweb="input"] > div {
-    background: #ffffff !important;
-    color: #10233c !important;
-}
-
-input,
-textarea {
-    color: #10233c !important;
-    background: #ffffff !important;
-}
-
-.stAlert {
-    color: #10233c;
-}
-
-h1,
-h2,
-h3,
-h4,
-p,
-label {
-    color: #10233c;
-}
-</style>
-""",
-unsafe_allow_html=True,
-
+    h1, h2, h3, h4, p, label {
+        color: #10233c;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-query_airline = st.query_params.get("airline", "AWG")
 
-default_index = (
-AIRLINES.index(query_airline)
-if query_airline in AIRLINES
-else 0
-)
+def empty_data():
+    return {code: [] for code in AIRLINES}
+
+
+def safe_text(value):
+    if value is None:
+        return ""
+    return str(value)
+
+
+def normalize_data(data):
+    clean_data = empty_data()
+
+    if isinstance(data, dict):
+        for code in AIRLINES:
+            rows = data.get(code, [])
+
+            if isinstance(rows, list):
+                fixed_rows = []
+
+                for row in rows:
+                    if isinstance(row, dict):
+                        fixed_row = {
+                            "id": safe_text(row.get("id")) or str(uuid.uuid4()),
+                            "Havayolu": code,
+                            "Ana Kategori": safe_text(row.get("Ana Kategori")),
+                            "Hizmet Adı": safe_text(row.get("Hizmet Adı")),
+                            "IKARUS Konu Başlığı": safe_text(row.get("IKARUS Konu Başlığı")),
+                            "IKARUS Alanı": safe_text(row.get("IKARUS Alanı")),
+                            "Giriş Kuralı": safe_text(row.get("Giriş Kuralı")),
+                            "Birim": safe_text(row.get("Birim")),
+                            "Zorunlu": safe_text(row.get("Zorunlu")),
+                            "Ne Zaman Girilir?": safe_text(row.get("Ne Zaman Girilir?")),
+                            "Kontrol Kaynağı": safe_text(row.get("Kontrol Kaynağı")),
+                            "Havayolu Özel Notu": safe_text(row.get("Havayolu Özel Notu")),
+                            "Son Güncelleme": safe_text(row.get("Son Güncelleme")),
+                        }
+
+                        if fixed_row["Hizmet Adı"].strip():
+                            fixed_rows.append(fixed_row)
+
+                clean_data[code] = fixed_rows
+
+    return clean_data
+
+
+def load_data():
+    if DATA_FILE.exists():
+        try:
+            loaded = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            return normalize_data(loaded)
+        except Exception:
+            return empty_data()
+
+    return empty_data()
+
+
+def save_data(data):
+    DATA_FILE.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def make_row(
+    airline,
+    category,
+    service_name,
+    section,
+    field,
+    rule,
+    unit,
+    required,
+    when_to_enter,
+    source,
+    note,
+):
+    return {
+        "id": str(uuid.uuid4()),
+        "Havayolu": airline,
+        "Ana Kategori": category,
+        "Hizmet Adı": service_name.strip(),
+        "IKARUS Konu Başlığı": section.strip(),
+        "IKARUS Alanı": field.strip(),
+        "Giriş Kuralı": rule.strip(),
+        "Birim": unit.strip(),
+        "Zorunlu": required,
+        "Ne Zaman Girilir?": when_to_enter.strip(),
+        "Kontrol Kaynağı": source.strip(),
+        "Havayolu Özel Notu": note.strip(),
+        "Son Güncelleme": datetime.now().strftime("%d.%m.%Y %H:%M"),
+    }
+
+
+def services_for_airline(data, airline):
+    rows = data.get(airline, [])
+    return [
+        row
+        for row in rows
+        if row.get("Havayolu") == airline
+    ]
+
+
+def find_service(data, airline, service_id):
+    for row in services_for_airline(data, airline):
+        if row.get("id") == service_id:
+            return row
+    return None
+
+
+def update_service(data, airline, service_id, updated_row):
+    rows = data.get(airline, [])
+    new_rows = []
+
+    for row in rows:
+        if row.get("id") == service_id:
+            new_rows.append(updated_row)
+        else:
+            new_rows.append(row)
+
+    data[airline] = new_rows
+    return data
+
+
+def delete_service(data, airline, service_id):
+    data[airline] = [
+        row
+        for row in data.get(airline, [])
+        if row.get("id") != service_id
+    ]
+    return data
+
+
+def filter_services(rows, search, category, required):
+    filtered = []
+
+    for row in rows:
+        row_text = " ".join(
+            safe_text(value).lower()
+            for value in row.values()
+        )
+
+        if search and search.lower() not in row_text:
+            continue
+
+        if category != "Tümü" and row.get("Ana Kategori") != category:
+            continue
+
+        if required != "Tümü" and row.get("Zorunlu") != required:
+            continue
+
+        filtered.append(row)
+
+    return filtered
+
+
+def service_title(row):
+    name = row.get("Hizmet Adı", "").strip()
+    category = row.get("Ana Kategori", "").strip()
+
+    if name and category:
+        return name + " • " + category
+
+    if name:
+        return name
+
+    return "İsimsiz Hizmet"
+
+
+def option_index(options, value):
+    if value in options:
+        return options.index(value)
+    return 0
+
+
+if "data" not in st.session_state:
+    st.session_state["data"] = load_data()
+
+if "editing_id" not in st.session_state:
+    st.session_state["editing_id"] = None
+
+if "page" not in st.session_state:
+    st.session_state["page"] = "Hizmet Kartları"
+
 
 st.sidebar.markdown("# ✈️ SFC")
 st.sidebar.caption("SCF–IKARUS Operasyon Rehberi")
 st.sidebar.divider()
 
-selected_airline = st.sidebar.radio(
-"HAVAYOLU SAYFALARI",
-AIRLINES,
-index=default_index,
+
+page = st.sidebar.radio(
+    "MENÜ",
+    [
+        "Hizmet Kartları",
+        "Yeni Hizmet Ekle",
+        "Hizmet Düzenle / Sil",
+        "Tüm Hizmetlerde Ara",
+        "SCF Kontrol",
+        "Veri Yönetimi",
+    ],
+    key="page",
 )
 
-st.query_params["airline"] = selected_airline
+
+selected_airline = st.sidebar.selectbox(
+    "Havayolu seç",
+    AIRLINES,
+)
+
 
 st.sidebar.divider()
-st.sidebar.caption("Aktif sayfa: " + selected_airline)
-st.sidebar.caption("Toplam havayolu: " + str(len(AIRLINES)))
-st.sidebar.caption("Her kod bağımsız rehber sayfasıdır.")
+st.sidebar.caption("Aktif havayolu: " + selected_airline)
+st.sidebar.caption("Bu sayfada sadece seçili havayolu verisi görünür.")
 
-st.markdown(
-f""" <div class="hero"> <div class="hero-kicker">
-SFC • SCF–IKARUS DİJİTAL HANDBOOK </div>
 
-```
-    <div class="hero-title">
-        {selected_airline} Hizmet Rehberi
-    </div>
-
-    <div class="hero-text">
-        {selected_airline} havayoluna ait IKARUS hizmet
-        girişleri, konu başlıkları, giriş kuralları,
-        kontrol kaynakları, özel operasyon notları ve
-        SCF kapanış adımları bu sayfada gösterilecektir.
-    </div>
-
-    <div>
-        <span class="badge">
-            {selected_airline}
-        </span>
-
-        <span class="badge">
-            Havayolu Özel Sayfası
-        </span>
-
-        <span class="badge">
-            SCF–IKARUS
-        </span>
-
-        <span class="badge">
-            Taslak v0.1
-        </span>
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
+current_rows = services_for_airline(
+    st.session_state["data"],
+    selected_airline,
 )
 
-metric_1, metric_2, metric_3, metric_4 = st.columns(4)
 
-metric_1.metric(
-"Havayolu Kodu",
-selected_airline,
+total_services = sum(
+    len(services_for_airline(st.session_state["data"], code))
+    for code in AIRLINES
 )
 
-metric_2.metric(
-"Ana Kategori",
-len(CATEGORIES),
+
+filled_airlines = sum(
+    1
+    for code in AIRLINES
+    if len(services_for_airline(st.session_state["data"], code)) > 0
 )
 
-metric_3.metric(
-"Tanımlı Hizmet",
-"0",
-)
 
-metric_4.metric(
-"İçerik Durumu",
-"Taslak",
-)
-
-st.markdown(
-""" <div class="notice"> <strong>
-Operasyonel hizmet bilgileri henüz eklenmedi. </strong> <br>
-Gerçek ve onaylı bilgiler paylaşılmadan sistem
-tahmini veya uydurma hizmet kuralı göstermeyecektir. </div>
-""",
-unsafe_allow_html=True,
-)
-
-st.subheader("1. Havayolu Sayfa Özeti")
-
-summary_1, summary_2, summary_3 = st.columns(3)
-
-summary_1.markdown(
-""" <div class="card"> <div class="card-title">
-Hizmet Haritası </div>
-
-```
-    <div class="card-text">
-        Hizmet adı, ana kategori, IKARUS konu başlığı,
-        giriş alanı, giriş kuralı ve birim bilgileri
-        burada yer alır.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-summary_2.markdown(
-""" <div class="card"> <div class="card-title">
-Havayolu Özel Kuralları </div>
-
-```
-    <div class="card-text">
-        Yalnızca seçili havayoluna ait farklı
-        uygulamalar, zorunlu açıklamalar ve istasyon
-        notları gösterilir.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-summary_3.markdown(
-""" <div class="card"> <div class="card-title">
-SCF Kapanış Kontrolü </div>
-
-```
-    <div class="card-text">
-        Uçuş, tescil, hizmet, süre, adet, açıklama
-        ve imza kontrolleri kapanıştan önce tamamlanır.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-st.subheader("2. Hizmet Arama ve Filtreleme")
-
-search_text = st.text_input(
-"Hizmet veya IKARUS alanı ara",
-placeholder=(
-"Örnek: GPU, merdiven, otobüs, adet, süre"
-),
-)
-
-selected_category = st.selectbox(
-"Ana kategori",
-["Tümü"] + CATEGORIES,
-)
-
-required_only = st.checkbox(
-"Yalnızca zorunlu hizmetleri göster",
-key=selected_airline + "_required",
-)
-
-st.caption(
-"Arama metni: "
-+ (
-search_text
-if search_text
-else "Arama yapılmadı"
-)
-)
-
-st.caption(
-"Seçili kategori: "
-+ selected_category
-)
-
-st.caption(
-"Zorunlu filtre: "
-+ (
-"Açık"
-if required_only
-else "Kapalı"
-)
-)
-
-st.subheader("3. IKARUS Hizmet Giriş Tablosu")
-
-service_template = [
-{
-"Havayolu": selected_airline,
-"Ana Kategori": "Ramp / Apron Hizmetleri",
-"Hizmet Adı": "Gerçek hizmet adı",
-"IKARUS Konu Başlığı": "Gerçek bölüm",
-"IKARUS Alanı": "Adet / süre / saat",
-"Giriş Kuralı": "Gerçekleşen değer girilir",
-"Birim": "Adet / dakika / kg",
-"Zorunlu": "Evet / Hayır",
-"Ne Zaman Girilir?": "Hizmet gerçekleştiğinde",
-"Kontrol Kaynağı": "Operasyon kaydı",
-"Özel Not": "Havayolu özel kuralı",
-},
-{
-"Havayolu": selected_airline,
-"Ana Kategori": "Yolcu Hizmetleri",
-"Hizmet Adı": "İkinci gerçek hizmet",
-"IKARUS Konu Başlığı": "Gerçek bölüm",
-"IKARUS Alanı": "Adet / açıklama",
-"Giriş Kuralı": "Onaylı kurala göre girilir",
-"Birim": "Adet",
-"Zorunlu": "Evet / Hayır",
-"Ne Zaman Girilir?": "Operasyon tamamlandığında",
-"Kontrol Kaynağı": "Yolcu hizmetleri kaydı",
-"Özel Not": "Doğrulanmış not",
-},
-{
-"Havayolu": selected_airline,
-"Ana Kategori": "GSE / Ekipman",
-"Hizmet Adı": "Üçüncü gerçek hizmet",
-"IKARUS Konu Başlığı": "Gerçek bölüm",
-"IKARUS Alanı": "Başlangıç / bitiş",
-"Giriş Kuralı": "Gerçek kullanım süresi girilir",
-"Birim": "Dakika",
-"Zorunlu": "Evet / Hayır",
-"Ne Zaman Girilir?": "Ekipman kullanıldığında",
-"Kontrol Kaynağı": "Ekipman kaydı",
-"Özel Not": "Doğrulanmış not",
-},
-]
-
-st.dataframe(
-service_template,
-use_container_width=True,
-hide_index=True,
-)
+st.title(selected_airline + " Hizmet Rehberi")
 
 st.info(
-"Bu tablo şablondur. Gerçek hizmet bilgilerini "
-"gönderdiğinde her satırı havayoluna özel olarak "
-"dolduracağız."
+    selected_airline
+    + " için eklenen hizmetler sadece bu havayolunda görünür. "
+    + "Başka havayoluna geçtiğinde bu kayıtlar karışmaz."
 )
 
-st.subheader("4. IKARUS Konu Başlıkları")
 
-category_1, category_2, category_3 = st.columns(3)
+m1, m2, m3, m4 = st.columns(4)
 
-category_1.markdown(
-""" <div class="section-box"> <div class="section-title">
-Uçuş Bilgileri </div>
-
-```
-    <div class="section-text">
-        Uçuş numarası, tarih, yön, uçak tipi,
-        tescil ve operasyon durumunun kontrol
-        edildiği bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_2.markdown(
-""" <div class="section-box"> <div class="section-title">
-Yolcu Hizmetleri </div>
-
-```
-    <div class="section-text">
-        Yolcu, transit, özel yolcu, otobüs ve
-        ilgili terminal hizmetlerinin
-        değerlendirildiği bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_3.markdown(
-""" <div class="section-box"> <div class="section-title">
-Ramp / Apron Hizmetleri </div>
-
-```
-    <div class="section-text">
-        Apronda gerçekleşen ekipman, araç,
-        yükleme ve uçak çevresi hizmetlerinin
-        bulunduğu bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_4, category_5, category_6 = st.columns(3)
-
-category_4.markdown(
-""" <div class="section-box"> <div class="section-title">
-Uçak Hizmetleri </div>
-
-```
-    <div class="section-text">
-        Su, tuvalet, temizlik, enerji ve uçağa
-        doğrudan verilen diğer hizmetlerin
-        bulunduğu bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_5.markdown(
-""" <div class="section-box"> <div class="section-title">
-Yük Kontrol ve Operasyon </div>
-
-```
-    <div class="section-text">
-        Yükleme, boşaltma, ağırlık, denge ve
-        operasyon kontrol bilgilerinin yer aldığı
-        bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_6.markdown(
-""" <div class="section-box"> <div class="section-title">
-Kargo ve Posta </div>
-
-```
-    <div class="section-text">
-        Kargo, posta, özel yük ve ilgili miktar
-        bilgilerinin girildiği bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_7, category_8, category_9 = st.columns(3)
-
-category_7.markdown(
-""" <div class="section-box"> <div class="section-title">
-GSE / Ekipman </div>
-
-```
-    <div class="section-text">
-        Kullanılan yer hizmetleri ekipmanlarının
-        adet, başlangıç, bitiş ve süre bilgilerinin
-        bulunduğu bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_8.markdown(
-""" <div class="section-box"> <div class="section-title">
-Ekstra / Ad-hoc Hizmetler </div>
-
-```
-    <div class="section-text">
-        Standart paket dışında talep edilen veya
-        plansız gerçekleşen hizmetlerin bulunduğu
-        bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-category_9.markdown(
-""" <div class="section-box"> <div class="section-title">
-İmza ve Kapanış </div>
-
-```
-    <div class="section-text">
-        Temsilci kontrolü, açıklama, imza, onay
-        ve SCF kapanış işlemlerinin tamamlandığı
-        bölüm.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-st.subheader("5. IKARUS İşlem Akışı")
-
-st.markdown(
-""" <div class="step"> <strong>Adım 1 — Uçuşu doğrula:</strong>
-Uçuş numarası, tarih, yön, uçak tipi ve
-tescili kontrol et. </div>
-
-```
-<div class="step">
-    <strong>Adım 2 — Doğru kategoriyi aç:</strong>
-    Hizmetin rehberde belirtilen IKARUS konu
-    başlığına gir.
-</div>
-
-<div class="step">
-    <strong>Adım 3 — Hizmeti seç:</strong>
-    Gerçekleşen hizmeti doğru isim ve doğru
-    kod üzerinden aç.
-</div>
-
-<div class="step">
-    <strong>Adım 4 — Değeri gir:</strong>
-    Adet, süre, saat, ağırlık veya açıklama
-    alanını kurala göre doldur.
-</div>
-
-<div class="step">
-    <strong>Adım 5 — Kaynağı kontrol et:</strong>
-    Operasyon, ekipman, yükleme veya yetkili
-    kayıtlarıyla karşılaştır.
-</div>
-
-<div class="step">
-    <strong>Adım 6 — Mükerrer kaydı kontrol et:</strong>
-    Aynı hizmetin iki kez girilmediğinden emin ol.
-</div>
-
-<div class="step">
-    <strong>Adım 7 — SCF'yi tamamla:</strong>
-    Eksik kayıt olmadığını doğrula ve imza
-    sürecini tamamla.
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-st.subheader("6. SCF Kapanış Kontrol Listesi")
-
-check_1 = st.checkbox(
-"Doğru uçuş numarası ve tarih seçildi.",
-key=selected_airline + "_check_1",
-)
-
-check_2 = st.checkbox(
-"Arrival / Departure ayrımı kontrol edildi.",
-key=selected_airline + "_check_2",
-)
-
-check_3 = st.checkbox(
-"Uçak tipi ve tescili doğrulandı.",
-key=selected_airline + "_check_3",
-)
-
-check_4 = st.checkbox(
-"Gerçekleşen bütün hizmetler girildi.",
-key=selected_airline + "_check_4",
-)
-
-check_5 = st.checkbox(
-"Gerçekleşmeyen hizmetler eklenmedi.",
-key=selected_airline + "_check_5",
-)
-
-check_6 = st.checkbox(
-"Başlangıç ve bitiş saatleri kontrol edildi.",
-key=selected_airline + "_check_6",
-)
-
-check_7 = st.checkbox(
-"Adet, süre, ağırlık ve birimler doğrulandı.",
-key=selected_airline + "_check_7",
-)
-
-check_8 = st.checkbox(
-"Mükerrer hizmet bulunmadığı kontrol edildi.",
-key=selected_airline + "_check_8",
-)
-
-check_9 = st.checkbox(
-"Ekstra hizmet açıklamaları eklendi.",
-key=selected_airline + "_check_9",
-)
-
-check_10 = st.checkbox(
-"Havayolu özel kuralları kontrol edildi.",
-key=selected_airline + "_check_10",
-)
-
-check_11 = st.checkbox(
-"İmza ve kapanış işlemleri tamamlandı.",
-key=selected_airline + "_check_11",
-)
-
-completed = sum(
-[
-check_1,
-check_2,
-check_3,
-check_4,
-check_5,
-check_6,
-check_7,
-check_8,
-check_9,
-check_10,
-check_11,
-]
-)
-
-st.progress(completed / 11)
-
-st.write(
-"Tamamlanan kontrol: **"
-+ str(completed)
-+ "/11**"
-)
-
-st.warning(
-"Eksik kontrol sayısı: "
-+ str(11 - completed)
-)
-
-st.subheader("7. Havayolu Özel Notları")
-
-st.markdown(
-f""" <div class="section-box"> <div class="section-title">
-{selected_airline} Operasyon Notları </div>
-
-```
-    <div class="section-text">
-        Bu bölümde yalnızca {selected_airline}
-        havayoluna ait özel hizmet kuralları,
-        istisnalar, zorunlu açıklamalar ve yetkili
-        onay bilgileri gösterilecektir.
-    </div>
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-st.text_area(
-"Geçici çalışma notları",
-placeholder=(
-selected_airline
-+ " için not ekleyin..."
-),
-height=180,
-key=selected_airline + "_notes",
-)
-
-st.subheader("8. Sürüm ve Onay Bilgileri")
-
-version_1, version_2, version_3, version_4 = st.columns(4)
-
-version_1.info(
-"Sürüm\n\nTaslak v0.1"
-)
-
-version_2.info(
-"Son Güncelleme\n\nBekleniyor"
-)
-
-version_3.info(
-"Kaynak Doküman\n\nTanımlanmadı"
-)
-
-version_4.info(
-"Onaylayan\n\nTanımlanmadı"
-)
+m1.metric("Seçili Havayolu", selected_airline)
+m2.metric("Bu Havayolundaki Hizmet", len(current_rows))
+m3.metric("Toplam Hizmet", total_services)
+m4.metric("Dolu Havayolu", filled_airlines)
 
 st.divider()
 
+
+if page == "Hizmet Kartları":
+    st.subheader("Hizmet Kartları")
+
+    col_filter_1, col_filter_2, col_filter_3 = st.columns(3)
+
+    with col_filter_1:
+        search_text = st.text_input(
+            "Ara",
+            placeholder="GPU, merdiven, süre, not...",
+        )
+
+    with col_filter_2:
+        category_filter = st.selectbox(
+            "Kategori",
+            ["Tümü"] + CATEGORIES,
+        )
+
+    with col_filter_3:
+        required_filter = st.selectbox(
+            "Zorunluluk",
+            ["Tümü"] + REQUIRED_OPTIONS,
+        )
+
+    filtered_rows = filter_services(
+        current_rows,
+        search_text,
+        category_filter,
+        required_filter,
+    )
+
+    if not filtered_rows:
+        st.warning(
+            selected_airline
+            + " için gösterilecek hizmet bulunamadı. "
+            + "Yeni hizmet eklemek için sol menüden 'Yeni Hizmet Ekle' sayfasına geç."
+        )
+
+    for row in filtered_rows:
+        with st.container(border=True):
+            top_1, top_2, top_3 = st.columns([3, 1, 1])
+
+            with top_1:
+                st.subheader(row.get("Hizmet Adı", "İsimsiz Hizmet"))
+                st.caption(
+                    row.get("Ana Kategori", "")
+                    + " • "
+                    + row.get("Zorunlu", "")
+                )
+
+            with top_2:
+                if st.button("Düzenle", key="edit_card_" + row["id"]):
+                    st.session_state["editing_id"] = row["id"]
+                    st.session_state["page"] = "Hizmet Düzenle / Sil"
+                    st.rerun()
+
+            with top_3:
+                if st.button("Sil", key="delete_card_" + row["id"]):
+                    st.session_state["data"] = delete_service(
+                        st.session_state["data"],
+                        selected_airline,
+                        row["id"],
+                    )
+                    save_data(st.session_state["data"])
+                    st.success("Hizmet silindi.")
+                    st.rerun()
+
+            detail_1, detail_2, detail_3 = st.columns(3)
+
+            with detail_1:
+                st.write("**IKARUS Konu Başlığı**")
+                st.write(row.get("IKARUS Konu Başlığı", "-"))
+
+                st.write("**IKARUS Alanı**")
+                st.write(row.get("IKARUS Alanı", "-"))
+
+            with detail_2:
+                st.write("**Birim**")
+                st.write(row.get("Birim", "-"))
+
+                st.write("**Ne Zaman Girilir?**")
+                st.write(row.get("Ne Zaman Girilir?", "-"))
+
+            with detail_3:
+                st.write("**Kontrol Kaynağı**")
+                st.write(row.get("Kontrol Kaynağı", "-"))
+
+                st.write("**Son Güncelleme**")
+                st.write(row.get("Son Güncelleme", "-"))
+
+            st.write("**Giriş Kuralı**")
+            st.write(row.get("Giriş Kuralı", "-"))
+
+            if row.get("Havayolu Özel Notu", "").strip():
+                st.write("**Havayolu Özel Notu**")
+                st.write(row.get("Havayolu Özel Notu", "-"))
+
+
+if page == "Yeni Hizmet Ekle":
+    st.subheader("Yeni Hizmet Ekle")
+
+    with st.form("add_service_form", clear_on_submit=True):
+        c1, c2 = st.columns(2)
+
+        with c1:
+            new_category = st.selectbox("Ana Kategori", CATEGORIES)
+
+            new_service = st.text_input(
+                "Hizmet Adı",
+                placeholder="Örn: GPU, merdiven, otobüs",
+            )
+
+            new_section = st.text_input(
+                "IKARUS Konu Başlığı",
+                placeholder="IKARUS'ta açılacak bölüm",
+            )
+
+            new_field = st.text_input(
+                "IKARUS Alanı",
+                placeholder="Adet / süre / saat / açıklama",
+            )
+
+            new_unit = st.text_input(
+                "Birim",
+                placeholder="Adet / dakika / kg / saat",
+            )
+
+        with c2:
+            new_required = st.selectbox(
+                "Zorunlu mu?",
+                REQUIRED_OPTIONS,
+            )
+
+            new_when = st.text_area(
+                "Ne Zaman Girilir?",
+                placeholder="Hangi durumda girilecek?",
+                height=90,
+            )
+
+            new_source = st.text_input(
+                "Kontrol Kaynağı",
+                placeholder="Operasyon kaydı / ekipman kaydı / yetkili onayı",
+            )
+
+            new_rule = st.text_area(
+                "Giriş Kuralı",
+                placeholder="Nasıl girilecek?",
+                height=120,
+            )
+
+        new_note = st.text_area(
+            "Havayolu Özel Notu",
+            placeholder="Özel kural veya açıklama",
+            height=90,
+        )
+
+        add_clicked = st.form_submit_button(
+            "Hizmeti Kaydet",
+            type="primary",
+        )
+
+        if add_clicked:
+            if not new_service.strip():
+                st.error("Hizmet adı boş olamaz.")
+            else:
+                new_row = make_row(
+                    selected_airline,
+                    new_category,
+                    new_service,
+                    new_section,
+                    new_field,
+                    new_rule,
+                    new_unit,
+                    new_required,
+                    new_when,
+                    new_source,
+                    new_note,
+                )
+
+                st.session_state["data"][selected_airline].append(new_row)
+                save_data(st.session_state["data"])
+
+                st.success(
+                    selected_airline
+                    + " için yeni hizmet kaydedildi."
+                )
+
+                st.session_state["page"] = "Hizmet Kartları"
+                st.rerun()
+
+
+if page == "Hizmet Düzenle / Sil":
+    st.subheader("Hizmet Düzenle / Sil")
+
+    if not current_rows:
+        st.warning(
+            selected_airline
+            + " için düzenlenecek hizmet bulunmuyor."
+        )
+    else:
+        current_ids = [
+            row["id"]
+            for row in current_rows
+        ]
+
+        selected_index = 0
+
+        if st.session_state["editing_id"] in current_ids:
+            selected_index = current_ids.index(st.session_state["editing_id"])
+
+        selected_service_id = st.selectbox(
+            "Düzenlenecek hizmeti seç",
+            current_ids,
+            index=selected_index,
+            format_func=lambda service_id: service_title(
+                find_service(
+                    st.session_state["data"],
+                    selected_airline,
+                    service_id,
+                )
+            ),
+        )
+
+        selected_row = find_service(
+            st.session_state["data"],
+            selected_airline,
+            selected_service_id,
+        )
+
+        st.session_state["editing_id"] = selected_service_id
+
+        with st.form("edit_service_form"):
+            c1, c2 = st.columns(2)
+
+            with c1:
+                edit_category = st.selectbox(
+                    "Ana Kategori",
+                    CATEGORIES,
+                    index=option_index(
+                        CATEGORIES,
+                        selected_row.get("Ana Kategori", ""),
+                    ),
+                )
+
+                edit_service = st.text_input(
+                    "Hizmet Adı",
+                    value=selected_row.get("Hizmet Adı", ""),
+                )
+
+                edit_section = st.text_input(
+                    "IKARUS Konu Başlığı",
+                    value=selected_row.get("IKARUS Konu Başlığı", ""),
+                )
+
+                edit_field = st.text_input(
+                    "IKARUS Alanı",
+                    value=selected_row.get("IKARUS Alanı", ""),
+                )
+
+                edit_unit = st.text_input(
+                    "Birim",
+                    value=selected_row.get("Birim", ""),
+                )
+
+            with c2:
+                edit_required = st.selectbox(
+                    "Zorunlu mu?",
+                    REQUIRED_OPTIONS,
+                    index=option_index(
+                        REQUIRED_OPTIONS,
+                        selected_row.get("Zorunlu", ""),
+                    ),
+                )
+
+                edit_when = st.text_area(
+                    "Ne Zaman Girilir?",
+                    value=selected_row.get("Ne Zaman Girilir?", ""),
+                    height=90,
+                )
+
+                edit_source = st.text_input(
+                    "Kontrol Kaynağı",
+                    value=selected_row.get("Kontrol Kaynağı", ""),
+                )
+
+                edit_rule = st.text_area(
+                    "Giriş Kuralı",
+                    value=selected_row.get("Giriş Kuralı", ""),
+                    height=120,
+                )
+
+            edit_note = st.text_area(
+                "Havayolu Özel Notu",
+                value=selected_row.get("Havayolu Özel Notu", ""),
+                height=90,
+            )
+
+            save_edit = st.form_submit_button(
+                "Düzenlemeyi Kaydet",
+                type="primary",
+            )
+
+            if save_edit:
+                if not edit_service.strip():
+                    st.error("Hizmet adı boş olamaz.")
+                else:
+                    updated_row = make_row(
+                        selected_airline,
+                        edit_category,
+                        edit_service,
+                        edit_section,
+                        edit_field,
+                        edit_rule,
+                        edit_unit,
+                        edit_required,
+                        edit_when,
+                        edit_source,
+                        edit_note,
+                    )
+
+                    updated_row["id"] = selected_service_id
+
+                    st.session_state["data"] = update_service(
+                        st.session_state["data"],
+                        selected_airline,
+                        selected_service_id,
+                        updated_row,
+                    )
+
+                    save_data(st.session_state["data"])
+
+                    st.success("Hizmet güncellendi.")
+                    st.rerun()
+
+        st.divider()
+
+        delete_col_1, delete_col_2 = st.columns([3, 1])
+
+        with delete_col_1:
+            st.warning(
+                "Bu işlem yalnızca "
+                + selected_airline
+                + " içindeki seçili hizmeti siler."
+            )
+
+        with delete_col_2:
+            if st.button("Seçili Hizmeti Sil", type="secondary"):
+                st.session_state["data"] = delete_service(
+                    st.session_state["data"],
+                    selected_airline,
+                    selected_service_id,
+                )
+                save_data(st.session_state["data"])
+                st.session_state["editing_id"] = None
+                st.success("Seçili hizmet silindi.")
+                st.rerun()
+
+
+if page == "Tüm Hizmetlerde Ara":
+    st.subheader("Tüm Hizmetlerde Ara")
+
+    st.info(
+        "Bu bölüm genel arama içindir. Burada tüm havayolları birlikte aranır. "
+        "Sadece tek havayolunu görmek için 'Hizmet Kartları' sayfasını kullan."
+    )
+
+    search_all = st.text_input(
+        "Genel arama",
+        placeholder="GPU, merdiven, süre, SVA...",
+    )
+
+    filter_airline = st.selectbox(
+        "Havayolu filtresi",
+        ["Tümü"] + AIRLINES,
+    )
+
+    filter_category = st.selectbox(
+        "Kategori filtresi",
+        ["Tümü"] + CATEGORIES,
+    )
+
+    all_rows = []
+
+    for code in AIRLINES:
+        for row in services_for_airline(st.session_state["data"], code):
+            all_rows.append(row)
+
+    filtered_all = []
+
+    for row in all_rows:
+        text = " ".join(
+            safe_text(value).lower()
+            for value in row.values()
+        )
+
+        if search_all and search_all.lower() not in text:
+            continue
+
+        if filter_airline != "Tümü" and row.get("Havayolu") != filter_airline:
+            continue
+
+        if filter_category != "Tümü" and row.get("Ana Kategori") != filter_category:
+            continue
+
+        filtered_all.append(row)
+
+    if not filtered_all:
+        st.warning("Arama kriterine uygun hizmet bulunamadı.")
+
+    for row in filtered_all:
+        with st.container(border=True):
+            st.subheader(
+                row.get("Hizmet Adı", "İsimsiz Hizmet")
+                + " — "
+                + row.get("Havayolu", "")
+            )
+
+            c1, c2, c3 = st.columns(3)
+
+            c1.write("**Kategori**")
+            c1.write(row.get("Ana Kategori", "-"))
+
+            c2.write("**IKARUS Başlığı**")
+            c2.write(row.get("IKARUS Konu Başlığı", "-"))
+
+            c3.write("**Zorunlu**")
+            c3.write(row.get("Zorunlu", "-"))
+
+            st.write("**Giriş Kuralı**")
+            st.write(row.get("Giriş Kuralı", "-"))
+
+
+if page == "SCF Kontrol":
+    st.subheader(selected_airline + " SCF Kapanış Kontrolü")
+
+    completed = 0
+
+    for index, item in enumerate(CHECKLIST):
+        checked = st.checkbox(
+            item,
+            key=selected_airline + "_check_" + str(index),
+        )
+
+        if checked:
+            completed += 1
+
+    st.progress(completed / len(CHECKLIST))
+
+    st.write(
+        "Tamamlanan kontrol: **"
+        + str(completed)
+        + "/"
+        + str(len(CHECKLIST))
+        + "**"
+    )
+
+    if completed == len(CHECKLIST):
+        st.success("Tüm SCF kontrolleri tamamlandı.")
+    else:
+        st.warning(
+            "Eksik kontrol sayısı: "
+            + str(len(CHECKLIST) - completed)
+        )
+
+
+if page == "Veri Yönetimi":
+    st.subheader("Veri Yönetimi")
+
+    st.warning(
+        "Bu sürüm veriyi services.json dosyasına kaydeder. Streamlit Cloud yeniden "
+        "kurulduğunda yerel JSON verisi kaybolabilir. Kalıcı çözüm için Supabase "
+        "veya Google Sheets bağlantısı yapılmalıdır."
+    )
+
+    data_as_json = json.dumps(
+        st.session_state["data"],
+        ensure_ascii=False,
+        indent=2,
+    )
+
+    st.download_button(
+        "Veriyi JSON Olarak İndir",
+        data=data_as_json.encode("utf-8"),
+        file_name="sfc_services_backup.json",
+        mime="application/json",
+    )
+
+    uploaded_file = st.file_uploader(
+        "JSON yedeği yükle",
+        type=["json"],
+    )
+
+    if uploaded_file is not None:
+        try:
+            uploaded_data = json.loads(
+                uploaded_file.read().decode("utf-8")
+            )
+
+            st.session_state["data"] = normalize_data(uploaded_data)
+            save_data(st.session_state["data"])
+
+            st.success("JSON yedeği yüklendi ve kaydedildi.")
+            st.rerun()
+        except Exception as exc:
+            st.error("JSON okunamadı: " + str(exc))
+
+    reset_clicked = st.button("Tüm Veriyi Sıfırla")
+
+    if reset_clicked:
+        st.session_state["data"] = empty_data()
+        save_data(st.session_state["data"])
+        st.warning("Tüm hizmet kayıtları sıfırlandı.")
+        st.rerun()
+
+
+st.divider()
 st.caption(
-"SFC • "
-+ selected_airline
-+ " • SCF–IKARUS Dijital Operasyon Rehberi"
+    "SFC • SCF–IKARUS Dijital Operasyon Rehberi • "
+    + selected_airline
 )
