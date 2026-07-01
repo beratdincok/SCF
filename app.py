@@ -1,4 +1,4 @@
-# SFC MODERN CARD BUILD FIXED 2026-07-01
+# SFC MODERN CARD BUILD FIXED MENU 2026-07-01
 
 import json
 import uuid
@@ -93,9 +93,47 @@ st.markdown(
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label {
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] .stMarkdown {
         color: #ffffff !important;
+    }
+
+    section[data-testid="stSidebar"] .stButton > button {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.10) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.20) !important;
+        border-radius: 12px !important;
+        padding: 0.65rem 0.85rem !important;
+        margin-bottom: 0.25rem !important;
+        font-weight: 700 !important;
+        text-align: left !important;
+    }
+
+    section[data-testid="stSidebar"] .stButton > button:hover {
+        background: rgba(41, 194, 209, 0.22) !important;
+        border-color: rgba(41, 194, 209, 0.70) !important;
+        color: #ffffff !important;
+    }
+
+    section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+        background: #29c2d1 !important;
+        color: #061b2e !important;
+        border: 1px solid #29c2d1 !important;
+        font-weight: 900 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+        background: #ffffff !important;
+        color: #10233c !important;
+        border: 1px solid #ccd8e4 !important;
+        border-radius: 10px !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-baseweb="select"] span,
+    section[data-testid="stSidebar"] div[data-baseweb="select"] input,
+    section[data-testid="stSidebar"] div[data-baseweb="select"] div {
+        color: #10233c !important;
     }
 
     div[data-testid="stMetric"] {
