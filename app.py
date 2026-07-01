@@ -1,4 +1,5 @@
-# SFC CRUD BUILD 2026-07-01
+# SFC CRUD CLEAN BUILD 2026-07-01
+
 import json
 import uuid
 from pathlib import Path
@@ -23,6 +24,7 @@ AIRLINES = [
     "SHI", "SVA", "RAM", "UAE", "UBD", "UZB", "BRU", "SKYAIR",
 ]
 
+
 CATEGORIES = [
     "Uçuş Bilgileri",
     "Yolcu Hizmetleri",
@@ -34,6 +36,7 @@ CATEGORIES = [
     "Ekstra / Ad-hoc Hizmetler",
     "İmza ve Kapanış",
 ]
+
 
 SERVICE_COLUMNS = [
     "Havayolu",
@@ -49,6 +52,21 @@ SERVICE_COLUMNS = [
     "Havayolu Özel Notu",
     "Son Güncelleme",
 ]
+
+
+CHECKLIST = [
+    "Doğru uçuş numarası ve tarih seçildi.",
+    "Arrival / Departure ayrımı kontrol edildi.",
+    "Uçak tipi ve tescili doğrulandı.",
+    "Gerçekleşen bütün hizmetler girildi.",
+    "Gerçekleşmeyen hizmetler eklenmedi.",
+    "Saat, adet, süre ve birimler kontrol edildi.",
+    "Mükerrer hizmet bulunmadığı kontrol edildi.",
+    "Ekstra hizmet açıklamaları eklendi.",
+    "Havayolu özel kuralları kontrol edildi.",
+    "İmza ve kapanış işlemleri tamamlandı.",
+]
+
 
 DATA_FILE = Path("services.json")
 
@@ -69,7 +87,6 @@ st.markdown(
 
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #07192b 0%, #123452 100%);
-        border-right: 1px solid rgba(255,255,255,0.12);
     }
 
     section[data-testid="stSidebar"] h1,
@@ -81,93 +98,12 @@ st.markdown(
         color: #ffffff !important;
     }
 
-    .hero {
-        background: linear-gradient(125deg, #081a2d 0%, #0e527c 58%, #12899b 100%);
-        color: #ffffff;
-        border-radius: 24px;
-        padding: 2rem 2.2rem;
-        box-shadow: 0 18px 45px rgba(9,30,50,0.18);
-        margin-bottom: 1.25rem;
-    }
-
-    .hero-title {
-        color: #ffffff;
-        font-size: clamp(2.1rem, 4vw, 3.5rem);
-        font-weight: 850;
-        line-height: 1.06;
-        margin-bottom: 0.7rem;
-    }
-
-    .hero-text {
-        color: #ffffff;
-        font-size: 1.05rem;
-        line-height: 1.65;
-        max-width: 1000px;
-        opacity: 0.92;
-    }
-
-    .badge {
-        display: inline-block;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.24);
-        color: #ffffff;
-        border-radius: 999px;
-        padding: 0.38rem 0.8rem;
-        margin-top: 1rem;
-        margin-right: 0.45rem;
-        font-size: 0.82rem;
-        font-weight: 700;
-    }
-
-    .card {
-        background: #ffffff;
-        border: 1px solid #d9e3ec;
-        border-radius: 17px;
-        padding: 1.15rem 1.2rem;
-        box-shadow: 0 7px 22px rgba(14,38,62,0.06);
-        min-height: 132px;
-        margin-bottom: 0.9rem;
-    }
-
-    .card-title {
-        color: #10233c;
-        font-size: 1.05rem;
-        font-weight: 800;
-        margin-bottom: 0.45rem;
-    }
-
-    .card-text {
-        color: #526579;
-        font-size: 0.94rem;
-        line-height: 1.55;
-    }
-
-    .notice {
-        background: #fff8e7;
-        border: 1px solid #edd18c;
-        color: #674900;
-        border-radius: 14px;
-        padding: 1rem 1.1rem;
-        margin-bottom: 1rem;
-        line-height: 1.55;
-    }
-
-    .success-note {
-        background: #eafaf2;
-        border: 1px solid #9dddbd;
-        color: #155b36;
-        border-radius: 14px;
-        padding: 1rem 1.1rem;
-        margin-bottom: 1rem;
-        line-height: 1.55;
-    }
-
     div[data-testid="stMetric"] {
         background: #ffffff;
         border: 1px solid #d9e3ec;
         border-radius: 15px;
         padding: 0.85rem 1rem;
-        box-shadow: 0 6px 18px rgba(14,38,62,0.05);
+        box-shadow: 0 6px 18px rgba(14, 38, 62, 0.05);
     }
 
     div[data-testid="stMetric"] label,
@@ -202,15 +138,33 @@ def empty_data():
 
 
 def normalize_data(data):
-    normalized = empty_data()
+    clean_data = empty_data()
 
     if isinstance(data, dict):
         for code in AIRLINES:
             rows = data.get(code, [])
-            if isinstance(rows, list):
-                normalized[code] = rows
 
-    return normalized
+            if isinstance(rows, list):
+                fixed_rows = []
+
+                for row in rows:
+                    if isinstance(row, dict):
+                        fixed_row = {}
+
+                        fixed_row["id"] = row.get("id", str(uuid.uuid4()))
+                        fixed_row["Havayolu"] = code
+
+                        for col in SERVICE_COLUMNS:
+                            if col == "Havayolu":
+                                fixed_row[col] = code
+                            else:
+                                fixed_row[col] = row.get(col, "")
+
+                        fixed_rows.append(fixed_row)
+
+                clean_data[code] = fixed_rows
+
+    return clean_data
 
 
 def load_data():
@@ -261,16 +215,23 @@ def make_row(
     }
 
 
-def rows_to_df(rows):
+def rows_to_df(rows, airline):
     display_rows = []
 
     for row in rows:
+        if row.get("Havayolu") != airline:
+            continue
+
         new_row = {"Sil": False}
 
         for col in SERVICE_COLUMNS:
-            new_row[col] = row.get(col, "")
+            if col == "Havayolu":
+                new_row[col] = airline
+            else:
+                new_row[col] = row.get(col, "")
 
         new_row["id"] = row.get("id", str(uuid.uuid4()))
+
         display_rows.append(new_row)
 
     if not display_rows:
@@ -293,23 +254,29 @@ def df_to_rows(df, airline):
         if not service_name:
             continue
 
-        saved_row = {}
         current_id = str(row.get("id", "")).strip()
 
         if current_id:
-            saved_row["id"] = current_id
+            row_id = current_id
         else:
-            saved_row["id"] = str(uuid.uuid4())
+            row_id = str(uuid.uuid4())
 
-        saved_row["Havayolu"] = airline
+        saved_row = {
+            "id": row_id,
+            "Havayolu": airline,
+            "Ana Kategori": str(row.get("Ana Kategori", "")).strip(),
+            "Hizmet Adı": service_name,
+            "IKARUS Konu Başlığı": str(row.get("IKARUS Konu Başlığı", "")).strip(),
+            "IKARUS Alanı": str(row.get("IKARUS Alanı", "")).strip(),
+            "Giriş Kuralı": str(row.get("Giriş Kuralı", "")).strip(),
+            "Birim": str(row.get("Birim", "")).strip(),
+            "Zorunlu": str(row.get("Zorunlu", "")).strip(),
+            "Ne Zaman Girilir?": str(row.get("Ne Zaman Girilir?", "")).strip(),
+            "Kontrol Kaynağı": str(row.get("Kontrol Kaynağı", "")).strip(),
+            "Havayolu Özel Notu": str(row.get("Havayolu Özel Notu", "")).strip(),
+            "Son Güncelleme": datetime.now().strftime("%d.%m.%Y %H:%M"),
+        }
 
-        for col in SERVICE_COLUMNS:
-            if col == "Havayolu":
-                continue
-
-            saved_row[col] = str(row.get(col, "")).strip()
-
-        saved_row["Son Güncelleme"] = datetime.now().strftime("%d.%m.%Y %H:%M")
         saved_rows.append(saved_row)
 
     return saved_rows
@@ -323,6 +290,7 @@ st.sidebar.markdown("# ✈️ SFC")
 st.sidebar.caption("SCF–IKARUS Operasyon Rehberi")
 st.sidebar.divider()
 
+
 page = st.sidebar.radio(
     "MENÜ",
     [
@@ -332,48 +300,49 @@ page = st.sidebar.radio(
     ],
 )
 
+
 selected_airline = st.sidebar.selectbox(
     "Havayolu seç",
     AIRLINES,
 )
+
 
 st.sidebar.divider()
 st.sidebar.caption("Aktif havayolu: " + selected_airline)
 st.sidebar.caption("Veri dosyası: services.json")
 
 
-st.markdown(
-    f"""
-    <section class="hero">
-        <div style="font-size:0.78rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;opacity:0.82;margin-bottom:0.55rem;">
-            SFC • SCF–IKARUS DİJİTAL HANDBOOK
-        </div>
+current_rows = [
+    row
+    for row in st.session_state["data"].get(selected_airline, [])
+    if row.get("Havayolu") == selected_airline
+]
 
-        <div class="hero-title">
-            {selected_airline} Hizmet Rehberi
-        </div>
 
-        <div class="hero-text">
-            Bu ekranda {selected_airline} havayolu için IKARUS'a girilecek hizmetleri
-            ekleyebilir, silebilir, düzenleyebilir ve SCF kontrol akışını yönetebilirsin.
-        </div>
-
-        <div>
-            <span class="badge">{selected_airline}</span>
-            <span class="badge">Ekle / Düzenle / Sil</span>
-            <span class="badge">SCF–IKARUS</span>
-            <span class="badge">CRUD Sürümü</span>
-        </div>
-    </section>
-    """,
-    unsafe_allow_html=True,
+total_services = sum(
+    len(rows)
+    for rows in st.session_state["data"].values()
 )
 
 
-current_rows = st.session_state["data"].get(selected_airline, [])
+filled_airlines = sum(
+    1
+    for rows in st.session_state["data"].values()
+    if len(rows) > 0
+)
 
-total_services = sum(len(rows) for rows in st.session_state["data"].values())
-filled_airlines = sum(1 for rows in st.session_state["data"].values() if rows)
+
+st.title(selected_airline + " Hizmet Rehberi")
+
+
+st.info(
+    "Bu ekranda "
+    + selected_airline
+    + " havayolu için IKARUS'a girilecek hizmetleri "
+    + "ekleyebilir, silebilir, düzenleyebilir ve SCF kontrol akışını yönetebilirsin. "
+    + "Başka havayoluna geçtiğinde bu havayoluna ait hizmetler orada görünmez."
+)
+
 
 m1, m2, m3, m4 = st.columns(4)
 
@@ -381,6 +350,8 @@ m1.metric("Seçili Havayolu", selected_airline)
 m2.metric("Bu Havayolundaki Hizmet", len(current_rows))
 m3.metric("Toplam Hizmet", total_services)
 m4.metric("Dolu Havayolu", filled_airlines)
+
+st.divider()
 
 
 if page == "Havayolu Yönetimi":
@@ -390,16 +361,48 @@ if page == "Havayolu Yönetimi":
         c1, c2 = st.columns(2)
 
         with c1:
-            new_category = st.selectbox("Ana Kategori", CATEGORIES)
-            new_service = st.text_input("Hizmet Adı", placeholder="Örn: GPU, merdiven, otobüs")
-            new_section = st.text_input("IKARUS Konu Başlığı", placeholder="IKARUS'ta açılacak bölüm")
-            new_field = st.text_input("IKARUS Alanı", placeholder="Adet / süre / saat / açıklama")
+            new_category = st.selectbox(
+                "Ana Kategori",
+                CATEGORIES,
+            )
+
+            new_service = st.text_input(
+                "Hizmet Adı",
+                placeholder="Örn: GPU, merdiven, otobüs",
+            )
+
+            new_section = st.text_input(
+                "IKARUS Konu Başlığı",
+                placeholder="IKARUS'ta açılacak bölüm",
+            )
+
+            new_field = st.text_input(
+                "IKARUS Alanı",
+                placeholder="Adet / süre / saat / açıklama",
+            )
 
         with c2:
-            new_rule = st.text_area("Giriş Kuralı", placeholder="Nasıl girilecek?", height=90)
-            new_unit = st.text_input("Birim", placeholder="Adet / dakika / kg / saat")
-            new_required = st.selectbox("Zorunlu mu?", ["Evet", "Hayır", "Duruma Bağlı"])
-            new_when = st.text_area("Ne Zaman Girilir?", placeholder="Hangi durumda girilecek?", height=90)
+            new_rule = st.text_area(
+                "Giriş Kuralı",
+                placeholder="Nasıl girilecek?",
+                height=90,
+            )
+
+            new_unit = st.text_input(
+                "Birim",
+                placeholder="Adet / dakika / kg / saat",
+            )
+
+            new_required = st.selectbox(
+                "Zorunlu mu?",
+                ["Evet", "Hayır", "Duruma Bağlı"],
+            )
+
+            new_when = st.text_area(
+                "Ne Zaman Girilir?",
+                placeholder="Hangi durumda girilecek?",
+                height=90,
+            )
 
         new_source = st.text_input(
             "Kontrol Kaynağı",
@@ -434,23 +437,27 @@ if page == "Havayolu Yönetimi":
 
                 st.session_state["data"][selected_airline].append(new_row)
                 save_data(st.session_state["data"])
-                st.success("Hizmet eklendi ve kaydedildi.")
+
+                st.success(
+                    selected_airline
+                    + " için hizmet eklendi ve kaydedildi."
+                )
+
                 st.rerun()
 
     st.subheader("2. Mevcut Hizmetleri Düzenle / Sil")
 
-    st.markdown(
-        """
-        <div class="notice">
-            Hücrelerin içini değiştirerek düzenleme yapabilirsin.
-            Satır silmek için en soldaki <strong>Sil</strong> kutusunu işaretleyip
-            alttaki <strong>Değişiklikleri Kaydet</strong> butonuna bas.
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.warning(
+        "Bu tabloda sadece "
+        + selected_airline
+        + " havayoluna ait hizmetler gösterilir. "
+        + "Başka havayolunun hizmetleri burada görünmez."
     )
 
-    editor_df = rows_to_df(st.session_state["data"].get(selected_airline, []))
+    editor_df = rows_to_df(
+        st.session_state["data"].get(selected_airline, []),
+        selected_airline,
+    )
 
     edited_df = st.data_editor(
         editor_df,
@@ -458,8 +465,15 @@ if page == "Havayolu Yönetimi":
         hide_index=True,
         num_rows="dynamic",
         column_config={
-            "Sil": st.column_config.CheckboxColumn("Sil", default=False),
+            "Sil": st.column_config.CheckboxColumn(
+                "Sil",
+                default=False,
+            ),
             "id": None,
+            "Havayolu": st.column_config.TextColumn(
+                "Havayolu",
+                disabled=True,
+            ),
             "Ana Kategori": st.column_config.SelectboxColumn(
                 "Ana Kategori",
                 options=CATEGORIES,
@@ -472,33 +486,33 @@ if page == "Havayolu Yönetimi":
         key="editor_" + selected_airline,
     )
 
-    save_clicked = st.button("Değişiklikleri Kaydet", type="primary")
+    save_clicked = st.button(
+        "Değişiklikleri Kaydet",
+        type="primary",
+    )
 
     if save_clicked:
-        cleaned_rows = df_to_rows(edited_df, selected_airline)
+        cleaned_rows = df_to_rows(
+            edited_df,
+            selected_airline,
+        )
+
         st.session_state["data"][selected_airline] = cleaned_rows
+
         save_data(st.session_state["data"])
-        st.success("Değişiklikler kaydedildi.")
+
+        st.success(
+            selected_airline
+            + " hizmetleri güncellendi."
+        )
+
         st.rerun()
 
     st.subheader("3. SCF Kapanış Kontrol Listesi")
 
-    checklist = [
-        "Doğru uçuş numarası ve tarih seçildi.",
-        "Arrival / Departure ayrımı kontrol edildi.",
-        "Uçak tipi ve tescili doğrulandı.",
-        "Gerçekleşen bütün hizmetler girildi.",
-        "Gerçekleşmeyen hizmetler eklenmedi.",
-        "Saat, adet, süre ve birimler kontrol edildi.",
-        "Mükerrer hizmet bulunmadığı kontrol edildi.",
-        "Ekstra hizmet açıklamaları eklendi.",
-        "Havayolu özel kuralları kontrol edildi.",
-        "İmza ve kapanış işlemleri tamamlandı.",
-    ]
-
     completed = 0
 
-    for index, item in enumerate(checklist):
+    for index, item in enumerate(CHECKLIST):
         checked = st.checkbox(
             item,
             key=selected_airline + "_check_" + str(index),
@@ -507,18 +521,33 @@ if page == "Havayolu Yönetimi":
         if checked:
             completed += 1
 
-    st.progress(completed / len(checklist))
-    st.write("Tamamlanan kontrol: **" + str(completed) + "/" + str(len(checklist)) + "**")
+    st.progress(completed / len(CHECKLIST))
+
+    st.write(
+        "Tamamlanan kontrol: **"
+        + str(completed)
+        + "/"
+        + str(len(CHECKLIST))
+        + "**"
+    )
 
 
 if page == "Tüm Hizmetler":
     st.subheader("Tüm Havayollarındaki Hizmetler")
 
+    st.info(
+        "Bu sayfa genel arama sayfasıdır. Burada bütün havayollarının hizmetleri "
+        "bilerek birlikte gösterilir. Sadece seçili havayolunu görmek için "
+        "'Havayolu Yönetimi' sayfasını kullan."
+    )
+
     all_rows = []
 
     for code, rows in st.session_state["data"].items():
         for row in rows:
-            all_rows.append(row)
+            fixed_row = dict(row)
+            fixed_row["Havayolu"] = code
+            all_rows.append(fixed_row)
 
     search = st.text_input(
         "Genel arama",
@@ -530,10 +559,18 @@ if page == "Tüm Hizmetler":
         ["Tümü"] + CATEGORIES,
     )
 
+    airline_filter = st.selectbox(
+        "Havayolu filtresi",
+        ["Tümü"] + AIRLINES,
+    )
+
     filtered_rows = []
 
     for row in all_rows:
-        text = " ".join(str(value).lower() for value in row.values())
+        text = " ".join(
+            str(value).lower()
+            for value in row.values()
+        )
 
         if not search:
             search_match = True
@@ -545,7 +582,12 @@ if page == "Tüm Hizmetler":
         else:
             category_match = row.get("Ana Kategori") == category_filter
 
-        if search_match and category_match:
+        if airline_filter == "Tümü":
+            airline_match = True
+        else:
+            airline_match = row.get("Havayolu") == airline_filter
+
+        if search_match and category_match and airline_match:
             filtered_rows.append(row)
 
     if filtered_rows:
@@ -561,16 +603,10 @@ if page == "Tüm Hizmetler":
 if page == "Veri Yönetimi":
     st.subheader("Veri Yönetimi")
 
-    st.markdown(
-        """
-        <div class="notice">
-            Bu sürüm veriyi <strong>services.json</strong> dosyasına yazar.
-            Streamlit Cloud uygulaması yeniden kurulduğunda veya dosyalar sıfırlandığında
-            yerel JSON verisi kaybolabilir. Kalıcı çözüm için sonraki aşamada Supabase
-            veya Google Sheets bağlantısı yapılmalıdır.
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.warning(
+        "Bu sürüm veriyi services.json dosyasına yazar. Streamlit Cloud yeniden "
+        "kurulduğunda veya dosyalar sıfırlandığında yerel JSON verisi kaybolabilir. "
+        "Kalıcı çözüm için sonraki aşamada Supabase veya Google Sheets bağlantısı yapılmalıdır."
     )
 
     data_as_json = json.dumps(
@@ -586,14 +622,23 @@ if page == "Veri Yönetimi":
         mime="application/json",
     )
 
-    uploaded_file = st.file_uploader("JSON yedeği yükle", type=["json"])
+    uploaded_file = st.file_uploader(
+        "JSON yedeği yükle",
+        type=["json"],
+    )
 
     if uploaded_file is not None:
         try:
-            uploaded_data = json.loads(uploaded_file.read().decode("utf-8"))
+            uploaded_data = json.loads(
+                uploaded_file.read().decode("utf-8")
+            )
+
             st.session_state["data"] = normalize_data(uploaded_data)
+
             save_data(st.session_state["data"])
+
             st.success("JSON yedeği yüklendi ve kaydedildi.")
+
             st.rerun()
         except Exception as exc:
             st.error("JSON okunamadı: " + str(exc))
@@ -602,10 +647,17 @@ if page == "Veri Yönetimi":
 
     if reset_clicked:
         st.session_state["data"] = empty_data()
+
         save_data(st.session_state["data"])
+
         st.warning("Tüm hizmet kayıtları sıfırlandı.")
+
         st.rerun()
 
 
 st.divider()
-st.caption("SFC • SCF–IKARUS Dijital Operasyon Rehberi • CRUD Yönetim Paneli")
+
+st.caption(
+    "SFC • SCF–IKARUS Dijital Operasyon Rehberi • "
+    + selected_airline
+)
