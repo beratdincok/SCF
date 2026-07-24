@@ -1094,7 +1094,7 @@ GENERAL_RULES = [
     },
     {
         "category": "Gökkuşağı",
-        "title": "Gökkuşağı faturaları",
+        "title": "SELÇUK faturaları",
         "detail": (
             "GROUND FORM açılır. Genel servis adı EXT; "
             "DAH için HTL, REFRESHMENT veya CRM kullanılır."
