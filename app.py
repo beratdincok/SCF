@@ -45,7 +45,7 @@ CATEGORIES = [
     "Yemek / Otel",
     "Sizer",
     "ABS",
-    "SELÇUK",
+    "Gökkuşağı",
     "Ay Sonu Excess",
     "Temsilci",
     "Genel Operasyon",
@@ -1094,7 +1094,7 @@ GENERAL_RULES = [
     },
     {
         "category": "Gökkuşağı",
-        "title": "SELÇUK faturaları",
+        "title": "Gökkuşağı faturaları",
         "detail": (
             "GROUND FORM açılır. Genel servis adı EXT; "
             "DAH için HTL, REFRESHMENT veya CRM kullanılır."
