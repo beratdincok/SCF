@@ -45,7 +45,7 @@ CATEGORIES = [
     "Yemek / Otel",
     "Sizer",
     "ABS",
-    "Gökkuşağı",
+    "SELÇUK",
     "Ay Sonu Excess",
     "Temsilci",
     "Genel Operasyon",
